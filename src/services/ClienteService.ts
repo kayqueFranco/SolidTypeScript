@@ -24,7 +24,7 @@ export default class ClienteService{
       
     }
 
-    async listarClientes(rq:Request, res:Response){
+    async listarClientes(req:Request, res:Response){
         try {
             const rs = await this.cliRepository.Listar()
             return res.status(200).json(rs)

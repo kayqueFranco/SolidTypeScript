@@ -1,7 +1,6 @@
-import { resolve } from "path";
+
 import Funcionario from "../classes/Funcionario";
 import CommandsPessoa from "../Interfaces/CommandsPessoa";
-import { rejects } from "assert";
 import { conexao } from "../database/Config";
 
 export default  class Funcionariorepository implements CommandsPessoa<Funcionario>{
@@ -12,7 +11,38 @@ export default  class Funcionariorepository implements CommandsPessoa<Funcionari
         throw new Error("Method not implemented.");
     }
     Cadastrar(obj: Funcionario): Promise<Funcionario> {
-        throw new Error("Method not implemented.");
+        return new Promise((resolve,reject)=>{
+            // Antes de cadastrar um cliente temos que cadastrar o enderecodesse cliente
+            // e,então obtemos o id do endereço cadastrado e  alocamos em uma variável para
+            //  depois inserir na tabela clientes, no campo id_endereco
+           let id_end:any;
+            conexao.query("INSERT INTO endereco(tipo_lougradouro,logradouro,numero,complemento,cep,bairro)values(?,?,?,?,?,?)",[obj.endereco.tipo_lougradouro,obj.endereco.logradouro,obj.endereco.numero,obj.endereco.complemento,obj.endereco.cep,obj.endereco.bairro],(erro,end:any)=>{
+                if(erro){
+                    return reject(erro)
+                }
+                else{
+                     id_end = end.insertId;
+                }
+            
+            
+            conexao.query("INSERT INTO funcionario(nome,cpf,email,telefone,id_endereco,cargo,salario) values(?,?,?,?,?,?,?)",
+            [obj.nome,
+                obj.cpf,
+                obj.email,
+                obj.telefone,
+                id_end,
+                obj.cargo,
+                obj.salario],
+            (error,result)=>{
+                if(error){ 
+                    return reject (error);
+                }
+                else{
+                    return resolve(obj)
+                }
+            })
+        })
+        })
     }
     Listar(): Promise<Funcionario[]> {
         return new Promise ((resolve,reject)=>{
